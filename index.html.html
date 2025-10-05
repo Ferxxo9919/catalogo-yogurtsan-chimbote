@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yogurtsan - Pedidos Chimbote</title>
+    <!-- Carga de Tailwind CSS para un diseño limpio y responsivo -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Definición de la paleta de colores de Yogurtsan */
+        /* Color de Fondo Principal (Header/Acento): Rosa Empolvado (#d79590) */
+        /* Color de Fondo de la Página: Rosa pálido / Crema (#f9edee) */
+        /* Color de Texto Oscuro (Letras del logo): Gris Oscuro (#2b353a) */
+        
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #f9edee; 
+        }
+        
+        /* Estilos específicos para la estética de Yogurtsan */
+        /* El acento (cabecera, texto de precios) es el nuevo Rosa Empolvado */
+        .accent-color { background-color: #d79590; }
+        .accent-text { color: #d79590; }
+        .dark-text { color: #2b353a; } /* Para títulos y texto que contrasten con fondos claros */
+        
+        .product-card { transition: all 0.2s; }
+        .product-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .quantity-btn { width: 32px; height: 32px; font-weight: bold; }
+        
+        /* El botón de WhatsApp se mantiene verde por convención */
+        .whatsapp-btn { background-color: #25d366; transition: background-color 0.3s; }
+        .whatsapp-btn:hover { background-color: #128c7e; }
+        
+        .modal { background-color: rgba(0, 0, 0, 0.5); }
+    </style>
+</head>
+<body>
+
+    <div id="app" class="max-w-xl mx-auto min-h-screen shadow-lg bg-white">
+        <!-- Encabezado de la App (Barra superior fija) -->
+        <header class="accent-color p-4 text-white text-center rounded-b-xl shadow-lg sticky top-0 z-10">
+            <div class="flex flex-col items-center justify-center">
+                <!-- Logo de Isotipo (imagen proporcionada por el usuario en forma redonda) -->
+                <!-- El logo tiene un fondo oscuro, por lo que lo cargamos directamente aquí -->
+                <img src="uploaded:09. Isotipo.jpg-ef7297e9-56ad-4ee1-ab0a-50c42792514f" alt="Logo de Yogurtsan" 
+                     class="h-16 w-16 rounded-full mb-2 p-1 shadow-md" 
+                     onerror="this.onerror=null;this.src='https://placehold.co/64x64/2b353a/ffffff?text=YS';" />
+                
+                <h1 class="text-3xl font-extrabold tracking-tight">Yogurtsan Chimbote</h1>
+                <p class="text-sm mt-1 opacity-90">Tu dosis diaria de Probióticos (¡Volvimos!) 👋</p>
+            </div>
+        </header>
+
+        <!-- Contenedor Principal del Catálogo -->
+        <main class="p-4 space-y-8 pb-32">
+            <!-- Mensaje de bienvenida y anuncio de regreso -->
+            <div class="bg-red-50 border-l-4 border-[#d79590] dark-text p-4 rounded-lg">
+                <p class="font-semibold text-sm">¡PREVENTA ABIERTA! Asegura tu Reto Probiótico de 10 Días.</p>
+                <p class="text-xs mt-1">Recuerda: **2 Yogures Griegos GRATIS** en packs seleccionados.</p>
+            </div>
+
+            <!-- Sección de Yogurt Bebible -->
+            <section>
+                <h2 class="text-xl font-bold mb-4 dark-text border-b-2 border-[#f9edee] pb-1">🍶 Yogur Bebible Probiótico (Fluidez)</h2>
+                <div id="bebible-list" class="space-y-4">
+                    <!-- Los productos se llenan con JS -->
+                </div>
+            </section>
+
+            <!-- Separador -->
+            <hr class="border-gray-300">
+
+            <!-- Sección de Yogurt Griego -->
+            <section>
+                <h2 class="text-xl font-bold mb-4 dark-text border-b-2 border-[#f9edee] pb-1">🥄 Yogur Griego Cremoso (Proteína)</h2>
+                <div id="griego-list" class="space-y-4">
+                    <!-- Los productos se llenan con JS -->
+                </div>
+            </section>
+        </main>
+
+        <!-- Resumen del Pedido (Pie de página fijo) -->
+        <div class="fixed bottom-0 left-0 right-0 bg-white p-4 border-t-2 border-[#d79590] shadow-2xl rounded-t-xl max-w-xl mx-auto">
+            <div class="flex justify-between items-center mb-2">
+                <span class="text-lg font-semibold text-gray-700">Total a Pagar:</span>
+                <span id="total-price" class="text-2xl font-extrabold accent-text">S/ 0.00</span>
+            </div>
+            <button id="send-whatsapp" class="whatsapp-btn w-full text-white font-bold py-3 rounded-xl shadow-lg flex items-center justify-center disabled:opacity-50" disabled>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                </svg>
+                Enviar Pedido por WhatsApp (0 productos)
+            </button>
+        </div>
+    </div>
+
+    <!-- Modal para Mostrar la Receta Generada por Gemini -->
+    <div id="recipe-modal" class="modal fixed inset-0 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white p-6 rounded-xl shadow-2xl max-w-md w-full relative">
+            <button onclick="closeModal()" class="absolute top-3 right-3 text-gray-500 hover:text-gray-800 font-bold text-xl">&times;</button>
+            <div id="loading-indicator" class="flex justify-center items-center p-8 hidden">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-[#d79590] mr-3"></div>
+                <p class="dark-text">Generando receta con Gemini... 🧠</p>
+            </div>
+            <div id="modal-content">
+                <!-- Contenido de la receta se inserta aquí -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- CONFIGURACIÓN DE GEMINI API ---
+        const apiKey = ""; 
+        const API_URL_GENERATOR = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+
+        // --- CONFIGURACIÓN Y DATOS DEL NEGOCIO ---
+        // Ponga su número de WhatsApp en formato internacional: +[código país][número sin espacios]
+        const WHATSAPP_NUMBER = "51923678031"; // Ejemplo: +51987654321 (Reemplazar con su número de Chimbote)
+        
+        // El estado global del carrito de compras
+        let cart = {};
+
+        // Definición de los productos de Yogurtsan con sus precios
+        const products = [
+            // YOGUR BEBIBLE
+            { id: 'bb1000', name: 'Bebible Probiótico', ml: 1000, price: 12.00, type: 'bebible' },
+            { id: 'bb450', name: 'Bebible Probiótico', ml: 450, price: 7.50, type: 'bebible' },
+            { id: 'bb250', name: 'Bebible Probiótico', ml: 250, price: 4.50, type: 'bebible' },
+            // YOGUR GRIEGO
+            { id: 'gr1000', name: 'Griego Cremoso', ml: 1000, price: 20.00, type: 'griego' },
+            { id: 'gr450', name: 'Griego Cremoso', ml: 450, price: 12.00, type: 'griego' },
+            { id: 'gr200', name: 'Griego Cremoso', ml: 200, price: 6.50, type: 'griego' },
+        ];
+        
+        // Sabores solicitados por el usuario
+        const FLAVORS = [
+            'Natural', 'Fresa', 'Coco', 'Guanábana', 'Lúcuma', 'Arándanos', 
+            'Mango', 'Maracuyá', 'Maracumango', 'Café', 'Miel con Semillas'
+        ];
+
+        // --- FUNCIONES UTILITARIAS ---
+
+        /**
+         * Genera una clave única para el carrito (ID_PRODUCTO-SABOR-CUSHURO_BOOL).
+         * @param {string} sizeId - ej: 'bb450'
+         * @param {string} flavorName - ej: 'Miel con Semillas'
+         * @param {boolean} withCushuro - si lleva cushuro o no
+         * @returns {string} - ej: 'bb450-Miel_con_Semillas-true'
+         */
+        function createCartKey(sizeId, flavorName, withCushuro) {
+            // Elimina espacios y convierte a minúsculas
+            const flavorSlug = flavorName.replace(/\s+/g, '_').toLowerCase();
+            return `${sizeId}-${flavorSlug}-${withCushuro}`;
+        }
+        
+        /**
+         * Extrae el sabor de una clave del carrito.
+         * @param {string} cartKey - ej: 'bb450-miel_con_semillas-true'
+         * @returns {object} - {sizeId, flavor, withCushuro}
+         */
+        function parseCartKey(cartKey) {
+            const parts = cartKey.split('-');
+            const withCushuro = parts.pop() === 'true'; // El último elemento es el estado del cushuro
+            const sizeId = parts[0];
+            const rawFlavorName = parts.slice(1).join(' ');
+            
+            // Encuentra el nombre original del sabor
+            const flavor = FLAVORS.find(f => f.replace(/\s+/g, '_').toLowerCase() === rawFlavorName) || rawFlavorName;
+            
+            return { sizeId, flavor, withCushuro };
+        }
+        
+        // --- FUNCIONES UTILITARIAS PARA LLM ---
+
+        /**
+         * Maneja reintentos con retraso creciente para llamadas API.
+         */
+        async function exponentialBackoff(fn, maxRetries = 3, delay = 1000) {
+            for (let i = 0; i < maxRetries; i++) {
+                try {
+                    return await fn();
+                } catch (error) {
+                    if (i === maxRetries - 1) throw error;
+                    // Esperar con un retardo que se duplica
+                    await new Promise(resolve => setTimeout(resolve, delay * Math.pow(2, i)));
+                }
+            }
+        }
+        
+        /**
+         * Realiza la llamada a la Gemini API.
+         */
+        async function callGeminiAPI(userQuery, systemPrompt) {
+            const payload = {
+                contents: [{ parts: [{ text: userQuery }] }],
+                systemInstruction: { parts: [{ text: systemPrompt }] },
+            };
+
+            const fetchConfig = {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            };
+
+            const response = await fetch(API_URL_GENERATOR, fetchConfig);
+            
+            if (!response.ok) {
+                // Lanzar error para que exponentialBackoff lo capture.
+                throw new Error(`API call failed with status: ${response.status}`);
+            }
+
+            const result = await response.json();
+            return result.candidates?.[0]?.content?.parts?.[0]?.text || "No se pudo generar el contenido. Intente de nuevo.";
+        }
+
+        /**
+         * Genera una receta específica para un producto usando Gemini.
+         */
+        async function generateRecipe(productName, productML, flavor) {
+            const modal = document.getElementById('recipe-modal');
+            const modalContent = document.getElementById('modal-content');
+            const loadingIndicator = document.getElementById('loading-indicator');
+            
+            // 1. Mostrar modal y loading
+            modal.classList.remove('hidden');
+            loadingIndicator.classList.remove('hidden');
+            modalContent.innerHTML = ''; // Limpiar contenido anterior
+
+            const systemPrompt = "Actúa como un chef repostero saludable especializado en cocina peruana. Genera una receta rápida (máximo 5 pasos) y nutritiva usando el yogur especificado. La respuesta debe ser concisa, sin introducción ni conclusión. Usa guiones (-) para los pasos.";
+            const userQuery = `Genera una idea o receta que combine frutas peruanas (como mango, lúcuma, o fresas) con el producto: Yogurtsan ${productName} sabor a ${flavor} de ${productML} ml.`;
+            
+            try {
+                const recipeText = await exponentialBackoff(() => callGeminiAPI(userQuery, systemPrompt));
+                loadingIndicator.classList.add('hidden');
+                
+                let htmlContent = `<h3 class="text-xl font-bold mb-3 accent-text">${productName} Sabor ${flavor} - Receta con Sabor Peruano 🇵🇪</h3>`;
+                
+                // Formato de la receta para mejor visualización
+                const formattedRecipe = recipeText.replace(/\*/g, '').split('\n').map(line => {
+                    if (line.trim().startsWith('-')) {
+                        return `<li class="ml-4 list-disc text-gray-700">${line.trim().substring(1).trim()}</li>`;
+                    } else if (line.trim().length > 0) {
+                        return `<p class="font-semibold text-gray-800 mt-2">${line.trim()}</p>`;
+                    }
+                    return '';
+                }).join('');
+
+                htmlContent += `<ul class="bg-red-50 p-4 rounded-xl border border-red-200 space-y-2">${formattedRecipe}</ul>`;
+                modalContent.innerHTML = htmlContent;
+
+            } catch (error) {
+                console.error("Gemini API Error:", error);
+                loadingIndicator.classList.add('hidden');
+                modalContent.innerHTML = '<p class="text-xl font-bold text-red-600">❌ Error de Conexión</p><p class="text-gray-600 mt-2">No se pudo generar la receta. Por favor, revise su conexión a internet o intente de nuevo.</p>';
+            }
+        }
+
+        /**
+         * Cierra el modal de la receta.
+         */
+        function closeModal() {
+            document.getElementById('recipe-modal').classList.add('hidden');
+        }
+
+
+        // --- FUNCIONES DE MANEJO DEL CARRITO ---
+
+        /**
+         * Inicializa o actualiza la cantidad de un producto en el carrito.
+         * @param {string} sizeId - ID del tamaño de producto (ej: 'bb450').
+         * @param {string} flavor - Nombre del sabor (ej: 'Fresa').
+         * @param {boolean} withCushuro - Si el producto tiene cushuro.
+         * @param {number} change - Cantidad a sumar o restar (1 o -1).
+         */
+        function updateQuantity(sizeId, flavor, withCushuro, change) {
+            const product = products.find(p => p.id === sizeId);
+            if (!product) return;
+
+            // Determinar la clave del carrito activa (con o sin cushuro)
+            // Siempre se actualiza la clave correspondiente al estado actual del checkbox
+            const activeCartKey = createCartKey(sizeId, flavor, withCushuro);
+            
+            let currentQty = cart[activeCartKey] ? cart[activeCartKey].quantity : 0;
+            let newQty = currentQty + change;
+
+            if (newQty < 0) newQty = 0;
+
+            if (newQty > 0) {
+                cart[activeCartKey] = {
+                    ...product,
+                    flavor: flavor,
+                    withCushuro: withCushuro, // Guardar el estado del cushuro
+                    quantity: newQty
+                };
+            } else {
+                delete cart[activeCartKey];
+            }
+
+            // Actualizar la interfaz y el total
+            renderCart();
+        }
+        
+        /**
+         * Maneja el cambio del checkbox de Cushuro.
+         * Mueve la cantidad del carrito de la versión "sin cushuro" a la versión "con cushuro"
+         * o viceversa.
+         * @param {string} sizeId - ID del producto.
+         * @param {string} flavor - Nombre del sabor.
+         * @param {boolean} checked - Nuevo estado del checkbox.
+         */
+        function handleCushuroChange(sizeId, flavor, checked) {
+            // Claves del carrito
+            const oldKey = createCartKey(sizeId, flavor, !checked); // La clave que ya existe (el opuesto)
+            const newKey = createCartKey(sizeId, flavor, checked);   // La clave a la que queremos movernos
+
+            // Obtener la cantidad que actualmente está en la clave opuesta
+            const currentQty = cart[oldKey] ? cart[oldKey].quantity : 0;
+            
+            // Si la cantidad en la clave opuesta es 0, no hay nada que mover.
+            if (currentQty === 0) {
+                // Si ya había algo en la nueva clave, simplemente renderiza de nuevo
+                renderCart();
+                return;
+            }
+            
+            // 1. Mover la cantidad al nuevo estado (con o sin cushuro)
+            const product = products.find(p => p.id === sizeId);
+            if (!product) return;
+            
+            // Crear el nuevo ítem con la cantidad movida
+            cart[newKey] = {
+                ...product,
+                flavor: flavor,
+                withCushuro: checked,
+                quantity: currentQty
+            };
+
+            // 2. Eliminar el ítem anterior
+            delete cart[oldKey];
+            
+            // 3. Renderizar para actualizar todas las visualizaciones
+            renderCart();
+        }
+
+        /**
+         * Renderiza el componente de control de cantidad para un sabor específico.
+         */
+        function renderFlavorControls(product, flavor) {
+            // Clave visual base (no usada en el carrito, solo para el ID del span y checkbox)
+            const visualKeyBase = createCartKey(product.id, flavor, false);
+            
+            // Claves de carrito para obtener las cantidades
+            const noCushuroKey = createCartKey(product.id, flavor, false);
+            const withCushuroKey = createCartKey(product.id, flavor, true);
+
+            const noCushuroQty = cart[noCushuroKey] ? cart[noCushuroKey].quantity : 0;
+            const withCushuroQty = cart[withCushuroKey] ? cart[withCushuroKey].quantity : 0;
+            
+            // La cantidad total mostrada debe ser la suma de ambas
+            const totalQty = noCushuroQty + withCushuroQty;
+            
+            // Si la cantidad total es > 0, determinar si el estado 'activo' es CON o SIN Cushuro
+            let isCushuroChecked = withCushuroQty > 0;
+            // Si la cantidad total es 0, el estado inicial es sin cushuro (false)
+            let isActiveWithCushuro = isCushuroChecked;
+
+            return `
+                <div class="flex flex-col py-2 border-b border-gray-100 last:border-b-0">
+                    
+                    <!-- Fila 1: Nombre del Sabor y Botones de Cantidad -->
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm font-medium dark-text w-1/2">${flavor}</span>
+                        <div class="flex items-center space-x-2 ml-4 flex-shrink-0">
+                            
+                            <!-- Botón de Disminuir: Actualiza la clave activa (la determinada por el checkbox) -->
+                            <button onclick="
+                                const checkbox = document.getElementById('cushuro-${visualKeyBase}');
+                                updateQuantity('${product.id}', '${flavor}', checkbox.checked, -1);
+                            " 
+                                    class="quantity-btn bg-red-100 dark-text rounded-full hover:bg-red-200" 
+                                    aria-label="Disminuir ${flavor}">-</button>
+                            
+                            <span id="qty-${visualKeyBase}" class="text-center font-bold w-6 dark-text">${totalQty}</span>
+                            
+                            <!-- Botón de Aumentar: Actualiza la clave activa (la determinada por el checkbox) -->
+                            <button onclick="
+                                const checkbox = document.getElementById('cushuro-${visualKeyBase}');
+                                updateQuantity('${product.id}', '${flavor}', checkbox.checked, 1);
+                            " 
+                                    class="quantity-btn bg-red-200 dark-text rounded-full hover:bg-red-300" 
+                                    aria-label="Aumentar ${flavor}">+</button>
+                        </div>
+                    </div>
+
+                    <!-- Fila 2: Checkbox de Cushuro -->
+                    <div class="flex items-center mt-2 pl-4">
+                        <input type="checkbox" id="cushuro-${visualKeyBase}" 
+                                onchange="handleCushuroChange('${product.id}', '${flavor}', this.checked)"
+                                ${isActiveWithCushuro ? 'checked' : ''}
+                                class="h-4 w-4 accent-text rounded border-gray-300 focus:ring-[#d79590]">
+                        <label for="cushuro-${visualKeyBase}" class="ml-2 text-xs font-semibold dark-text">
+                            Añadir Cushuro (Alga Andina)
+                        </label>
+                    </div>
+                </div>
+            `;
+        }
+
+
+        /**
+         * Renderiza la lista de productos y sus sabores.
+         */
+        function renderProductItem(product) {
+            const title = product.type === 'bebible' 
+                ? `Yogurtsan Bebible Probiótico - ${product.ml} ml` 
+                : `Yogurtsan Griego Cremoso - ${product.ml} ml`;
+            
+            const shortDesc = product.type === 'bebible' 
+                ? `Ideal para tu dosis diaria. Listo para llevar.`
+                : `Alto en proteína. Perfecto para snacks y desayunos.`;
+            
+            // Generar los controles para cada sabor
+            const flavorControlsHtml = FLAVORS.map(flavor => renderFlavorControls(product, flavor)).join('');
+
+
+            return `
+                <div id="item-${product.id}" class="product-card bg-white p-4 rounded-xl shadow border border-gray-100">
+                    <!-- Información del Producto y Precio -->
+                    <div class="flex justify-between items-center mb-2">
+                        <div>
+                            <h3 class="text-lg font-bold dark-text">${title}</h3>
+                            <p class="text-xs text-gray-500">${shortDesc}</p>
+                        </div>
+                        <span class="text-xl font-bold accent-text ml-4">S/ ${product.price.toFixed(2)}</span>
+                    </div>
+
+                    <div class="flex justify-between items-center pt-2 border-t border-gray-200 mt-2">
+                        <span class="text-sm font-semibold dark-text">Selecciona el sabor y la cantidad:</span>
+                        <button onclick="generateRecipe('${product.name}', ${product.ml}, 'General')" 
+                            class="text-xs font-semibold px-3 py-1 bg-indigo-500 text-white rounded-full hover:bg-indigo-600 transition duration-150 shadow-md">
+                            ✨ Inspiración (Receta)
+                        </button>
+                    </div>
+
+                    <!-- Lista de Sabores con Controles -->
+                    <div class="space-y-1 mt-3 p-2 bg-red-50 rounded-lg border border-red-100">
+                        ${flavorControlsHtml}
+                    </div>
+                </div>
+            `;
+        }
+
+        /**
+         * Recalcula el total del carrito y actualiza la interfaz.
+         */
+        function renderCart() {
+            let total = 0;
+            let totalItems = 0;
+            
+            // Usamos un objeto temporal para agrupar cantidades para la visualización
+            const visualQuantities = {};
+
+            for (const cartKey in cart) {
+                const item = cart[cartKey];
+                total += item.price * item.quantity;
+                totalItems += item.quantity;
+                
+                // Agrupar visualmente por sizeId y flavor (sin importar el cushuro)
+                const { sizeId, flavor } = parseCartKey(cartKey);
+                const visualKey = createCartKey(sizeId, flavor, false); // Base key para el span de cantidad
+                visualQuantities[visualKey] = (visualQuantities[visualKey] || 0) + item.quantity;
+
+                // Actualizar el estado del checkbox y los botones.
+                // Si hay cantidad en la versión CON cushuro, el checkbox debe estar marcado.
+                if (item.withCushuro && item.quantity > 0) {
+                    const checkbox = document.getElementById(`cushuro-${visualKey}`);
+                    if (checkbox && !checkbox.checked) {
+                         // Actualizar visualmente la casilla si la cantidad está en la versión con cushuro
+                        checkbox.checked = true;
+                    }
+                }
+            }
+            
+            // Después de calcular todas las cantidades, actualizamos los spans
+            for (const key of Object.keys(visualQuantities)) {
+                const qtySpan = document.getElementById(`qty-${key}`);
+                if (qtySpan) {
+                    qtySpan.textContent = visualQuantities[key];
+                }
+            }
+
+            // Para los productos que tienen 0 cantidad total (es decir, no están en visualQuantities)
+            // debemos resetear su visualización.
+            // Esto es un poco más complejo, pero es necesario para que las cantidades se reinicien a 0.
+            const allVisualKeys = products.flatMap(p => FLAVORS.map(f => createCartKey(p.id, f, false)));
+            
+            allVisualKeys.forEach(visualKey => {
+                if (!visualQuantities[visualKey]) {
+                    const qtySpan = document.getElementById(`qty-${visualKey}`);
+                    if (qtySpan) qtySpan.textContent = 0;
+                    
+                    // Asegurarse de que el checkbox esté desmarcado si la cantidad total es 0
+                    // (aunque el handleCushuroChange ya hace una parte del trabajo)
+                    const noCushuroKey = createCartKey(parseCartKey(visualKey).sizeId, parseCartKey(visualKey).flavor, false);
+                    const withCushuroKey = createCartKey(parseCartKey(visualKey).sizeId, parseCartKey(visualKey).flavor, true);
+                    
+                    if (!cart[noCushuroKey] && !cart[withCushuroKey]) {
+                        const checkbox = document.getElementById(`cushuro-${visualKey}`);
+                        if (checkbox) checkbox.checked = false;
+                    }
+                }
+            });
+
+
+            document.getElementById('total-price').textContent = `S/ ${total.toFixed(2)}`;
+
+            const whatsappBtn = document.getElementById('send-whatsapp');
+            whatsappBtn.disabled = totalItems === 0;
+            whatsappBtn.textContent = totalItems === 0
+                ? 'Enviar Pedido por WhatsApp (0 productos)'
+                : `Enviar Pedido por WhatsApp (${totalItems} productos) | S/ ${total.toFixed(2)}`;
+        }
+        
+        /**
+         * Genera el mensaje de texto detallado del pedido para WhatsApp.
+         */
+        function generateMessage() {
+            let message = `¡Hola Yogurtsan! 👋 Quisiera realizar el siguiente pedido para Chimbote:\n\n`;
+            let total = 0;
+            let hasItems = false;
+            
+            // 1. Listar los productos del carrito
+            // Primero ordenamos las claves para un mejor formato en el mensaje
+            const sortedKeys = Object.keys(cart).sort();
+
+            for (const cartKey of sortedKeys) {
+                const item = cart[cartKey];
+                const subtotal = item.price * item.quantity;
+                total += subtotal;
+                hasItems = true;
+
+                const cushuroTag = item.withCushuro ? ' (+ Cushuro)' : '';
+
+                // Construir el título con Sabor y Cushuro
+                const productTitle = item.type === 'bebible' 
+                    ? `*${item.quantity}x* Bebible ${item.ml} ml (Sabor: ${item.flavor}${cushuroTag})` 
+                    : `*${item.quantity}x* Griego ${item.ml} ml (Sabor: ${item.flavor}${cushuroTag})`;
+                
+                message += `- ${productTitle} (S/ ${subtotal.toFixed(2)})\n`;
+            }
+
+            if (!hasItems) {
+                return ""; // No enviar mensaje si el carrito está vacío
+            }
+            
+            // 2. Añadir el resumen y la información necesaria
+            message += `\n*TOTAL DEL PEDIDO: S/ ${total.toFixed(2)}*\n\n`;
+            message += `Mis datos:\n- Nombre: [Escribe tu Nombre]\n- Dirección: [Escribe tu Dirección en Chimbote]\n- Método de Pago: [Efectivo/Yape/Transferencia]\n\n`;
+            message += `¡Gracias! Espero la confirmación.`;
+
+            // Codificar el mensaje para la URL de WhatsApp
+            return encodeURIComponent(message);
+        }
+
+        /**
+         * Redirige al cliente a WhatsApp con el pedido precargado.
+         */
+        function sendOrder() {
+            const message = generateMessage();
+            if (message) {
+                const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${message}`;
+                window.open(url, '_blank');
+            } else {
+                // Mensaje de error para el usuario
+                const appDiv = document.getElementById('app');
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-red-500 text-white p-4 rounded-xl shadow-xl z-50';
+                errorDiv.textContent = '¡Debes seleccionar al menos un producto para enviar el pedido!';
+                appDiv.appendChild(errorDiv);
+                
+                setTimeout(() => {
+                    appDiv.removeChild(errorDiv);
+                }, 3000);
+            }
+        }
+
+        // --- INICIALIZACIÓN DE LA APLICACIÓN ---
+        function initApp() {
+            const bebibleList = document.getElementById('bebible-list');
+            const griegoList = document.getElementById('griego-list');
+            const sendBtn = document.getElementById('send-whatsapp');
+
+            // Llenar las secciones de productos
+            products.filter(p => p.type === 'bebible').forEach(p => {
+                bebibleList.innerHTML += renderProductItem(p);
+            });
+            products.filter(p => p.type === 'griego').forEach(p => {
+                griegoList.innerHTML += renderProductItem(p);
+            });
+
+            // Asignar el evento al botón de WhatsApp
+            sendBtn.addEventListener('click', sendOrder);
+
+            // Renderizar el carrito inicial (mostrar S/ 0.00)
+            renderCart();
+        }
+
+        // Asegurarse de que el DOM esté cargado antes de inicializar
+        window.onload = initApp;
+
+    </script>
+</body>
+</html>
